@@ -1,29 +1,33 @@
-# Tailscale reachable while IPv4/LAN access failed
+# Tailscale online, de az IPv4/LAN-szolgáltatások nem elérhetők
 
-**Period:** 2026-08-25–31 (CEST)  
-**Scope:** Proxmox, Tailscale, LXC network, ImmortalWrt/dnsmasq.  
-**Status:** Access restored; initiating cause not proven.
+**Időszak:** 2026-08-25–31 (CEST)  
+**Érintett rendszer:** Proxmox, Tailscale, LXC-hálózat, ImmortalWrt/dnsmasq.  
+**Állapot:** Az elérés helyreállt, a kiváltó ok nem bizonyított.
 
-## Symptoms
+## Tünetek
 
-The Proxmox host was shown online in Tailscale and its 100.x address responded, but reaching local IPv4 services remotely failed. Investigation included subnet routing, IPv4 forwarding and SSH access. A later check found a guest without an eth0 IPv4 address. During the observed capture its DHCPDISCOVER did not receive an offer. The user confirmed access returned after a dnsmasq restart; the precise condition preventing an offer was not established.
+A Proxmox Tailscale-ben online volt, a 100.x címe válaszolt, a helyi IPv4-szolgáltatásokat azonban távolról nem lehetett elérni. A vizsgálat érintette az alhálózati útválasztást, IPv4-forwardingot és SSH-t. Egy későbbi ellenőrzésnél egy vendég `eth0` interfészén nem volt IPv4-cím. A rögzített forgalomban a DHCPDISCOVER kérésre nem érkezett ajánlat. A dnsmasq újraindítása után az elérés visszatért, de az ajánlat hiányának pontos oka nem derült ki.
 
-A router-side reservation is not the same as a static address set inside the guest. These events should not be assumed to have the same root cause as the later September mass IPv4 accumulation.
+A routeren beállított DHCP-foglalás **nem ugyanaz**, mint a vendégen beállított statikus IP-cím. Nem bizonyított, hogy ez az eset ugyanabból az okból történt, mint a szeptemberi tömeges IP-címhalmozás.
 
-## Useful checks
+## Hasznos ellenőrzések
 
 Proxmox host:
 
-    tailscale status
-    sysctl net.ipv4.ip_forward
-    pct config 101
-    pct exec 101 -- ip -4 -br addr
-    pct exec 101 -- ip -4 route
+```bash
+tailscale status
+sysctl net.ipv4.ip_forward
+pct config 101
+pct exec 101 -- ip -4 -br addr
+pct exec 101 -- ip -4 route
+```
 
 ImmortalWrt:
 
-    /etc/init.d/dnsmasq status
-    logread | grep -Ei 'DHCPDISCOVER|DHCPOFFER|DHCPACK|DHCPDECLINE' | tail -n 100
-    cat /tmp/dhcp.leases
+```sh
+/etc/init.d/dnsmasq status
+logread | grep -Ei 'DHCPDISCOVER|DHCPOFFER|DHCPACK|DHCPDECLINE' | tail -n 100
+cat /tmp/dhcp.leases
+```
 
-If recurrence allows, preserve timestamps, MAC/reservation mapping, offers and routing state **before** restarting services.
+Ismétlődéskor, lehetőség szerint **újraindítás előtt** érdemes rögzíteni az időpontokat, MAC-címeket, foglalásokat, DHCP-ajánlatokat és az útválasztási állapotot.
