@@ -1,0 +1,23 @@
+name: IP Watch checks
+on:
+  push:
+    paths:
+      - 'scripts/proxmox-ip-watch.sh'
+      - 'tests/test-ip-watch.sh'
+      - '.github/workflows/ip-watch-tests.yml'
+  pull_request:
+    paths:
+      - 'scripts/proxmox-ip-watch.sh'
+      - 'tests/test-ip-watch.sh'
+      - '.github/workflows/ip-watch-tests.yml'
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bash syntax
+        run: bash -n scripts/proxmox-ip-watch.sh tests/test-ip-watch.sh
+      - name: Mocked behavior tests
+        run: bash tests/test-ip-watch.sh
+      - name: ShellCheck
+        run: shellcheck scripts/proxmox-ip-watch.sh tests/test-ip-watch.sh
