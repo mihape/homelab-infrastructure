@@ -1,48 +1,50 @@
 # Homelab Infrastructure
 
-A practical Proxmox VE homelab used to develop Linux, virtualization, networking, service operations and incident-response skills. This repository documents **observed operations, diagnostics, recovery actions and unfinished investigations**; it is not a claim of production high availability or an enterprise-certified security architecture.
+A practical Proxmox VE homelab for Linux, Windows Server learning, virtualization, networking, service operations and incident response. The focus is on **troubleshooting, repeatable checks and clear documentation**, not counting installed applications.
 
-## Platform and services
+I support Windows clients and day-to-day IT needs in a small-business environment while studying Engineering Information Technology. This repository records my **personal lab work**, not my employer's infrastructure, customer data or enterprise AD experience.
 
-| Area | Tools and workloads documented |
+## What is here
+
+| Area | Documented lab work |
 | --- | --- |
-| Virtualization | Proxmox VE, Linux containers (LXC) and VMs |
-| Routing and remote access | Xiaomi AX3600 running ImmortalWrt, DHCP/DNS troubleshooting, Tailscale |
+| Virtualization | Proxmox VE, Linux containers (LXC), VMs, USB passthrough |
+| Routing and remote access | ImmortalWrt, DNS/DHCP troubleshooting, Tailscale |
 | Internal services | AdGuard Home, Vaultwarden, reverse proxy, Gotify |
 | Smart home | Home Assistant OS, Zigbee2MQTT and MQTT |
-| Media | Jellyfin and related automation services |
-| Monitoring | Gotify and a custom Proxmox LXC IPv4 watcher |
+| Media and storage | Jellyfin, filesystem and thin-pool troubleshooting |
+| Monitoring | Proxmox LXC IPv4 watcher, Gotify alerts, systemd timer |
+| Windows Server | VM 124 installed; Active Directory configuration **not started** |
 
-This table summarizes technologies encountered in the documented lab. It is **not** a live configuration inventory, statement of continuous availability or exhaustive service list.
+This is not a live service inventory or a claim of production high availability. Historical observations and currently deployed configurations may differ.
 
-## Operational documentation
+## Evidence and operational documentation
 
-- [Incident register](docs/incidents/README.md): dated cases with the **last confirmed outcome**, diagnostics and outstanding questions.
-- [Mass LXC IPv4 accumulation and DHCP conflicts](docs/incidents/2026-09-lxc-ip-conflicts.md): investigation, impact, measured guest address counts and staged remediation.
-- [Proxmox IP Watch](docs/monitoring/proxmox-ip-watch.md): Gotify alerting, a systemd timer, verification commands and monitor limitations.
-- [Proxmox storage exhaustion](docs/incidents/2026-08-23-proxmox-storage-full.md) and [thin-pool/Jellyfin recovery](docs/incidents/2026-08-29-thin-pool-jellyfin.md): capacity analysis and application integrity.
-- [Tailscale/DHCP incident](docs/incidents/2026-08-25-tailscale-dhcp.md): distinguishing overlay reachability from guest IPv4 availability.
+- [Incident register](docs/incidents/README.md): dated cases, recorded symptoms, actions, verification and unresolved questions.
+- [Mass LXC IPv4 conflicts](docs/incidents/2026-09-lxc-ip-conflicts.md): tracing a duplicate-address symptom across clients, DHCP and guest interfaces.
+- [Proxmox IP Watch runbook](docs/monitoring/proxmox-ip-watch.md): notification path, timer verification and limits.
+- [Portable IP Watch revision](scripts/proxmox-ip-watch.sh) and [mocked tests](tests/test-ip-watch.sh): versioned **proposed** implementation; not yet verified identical to the running host script.
+- [Proxmox storage incident](docs/incidents/2026-08-23-proxmox-storage-full.md) and [Jellyfin follow-up](docs/incidents/2026-08-29-thin-pool-jellyfin.md): infrastructure and application recovery are separate validation steps.
+- [Windows Server / AD lab](docs/labs/windows-server-ad.md): installed VM and explicitly **planned**, not completed, AD exercises.
 
-## Operating approach
+## Troubleshooting approach
 
-1. Identify **impact** and capture reproducible evidence (logs, leases, addresses, capacity, timestamps).
-2. Distinguish an **observation** from a hypothesis about the root cause.
-3. Apply changes to one service or container at a time where feasible.
-4. Verify both infrastructure state **and** application behavior.
-5. Document unresolved issues and add monitoring where the incident exposed an observability gap.
+1. Establish user impact and the scope of the failure.
+2. Capture relevant addresses, routes, storage usage, service state, logs and timestamps.
+3. Separate observed evidence from hypotheses; change one component at a time where practical.
+4. Validate both infrastructure and the affected application.
+5. Record remaining uncertainty and turn recurring symptoms into monitoring or a reproducible lab.
 
-Examples in the incident documents are **diagnostic references**, not scripts to run blindly against another environment. Some incidents were recovered operationally while their initiating causes remain unknown.
+## Next milestones
 
-## Development roadmap
+- [ ] Compare the live IP Watch file with the portable version, review secrets and perform controlled rollout.
+- [ ] Capture a sanitized lab diagram and a point-in-time VM/LXC inventory.
+- [ ] Build an **isolated** Windows Server AD DS/DNS + Windows client lab; then document actual OU/GPO and PowerShell exercises.
+- [ ] Perform and document a real backup **restore test**.
+- [ ] Add capacity alerting for the root filesystem and the thin pool.
 
-- [ ] Capture and version the verified live Proxmox IP Watch script without secrets.
-- [ ] Add a monitored restore test and documented backup retention policy.
-- [ ] Add root-filesystem and thin-pool capacity alerting.
-- [ ] Inventory service roles, network segmentation and VM/LXC resources from the *current* configuration.
-- [ ] Introduce ShellCheck and small reproducible automation where appropriate.
+## Public-repository safety
 
-## Scope and security
+No credentials, VPN keys, real user or customer data, full backups or unredacted company configurations belong here. Company support experience and personal homelab work are distinct. Lab plans are not described as achievements, and a successful restart is not automatically proof of a root cause.
 
-This is a **public** repository. Do not commit access tokens, VPN keys, credentials, full backup archives, private security-sensitive configuration or unredacted service logs. Historical dates, guests and addresses are not guaranteed current.
-
-Documentation and some automation were developed with AI assistance and reviewed through hands-on troubleshooting; the incident records distinguish user-confirmed results from unverified outcomes.
+Documentation and some scripts were developed with AI assistance and verified through hands-on operations or explicitly labeled as proposals.
