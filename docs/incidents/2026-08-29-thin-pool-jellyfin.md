@@ -8,7 +8,7 @@
 
 A thin pool foglaltsága a tisztítás előtt körülbelül 92% volt, LXC TRIM után 74,46%, VM TRIM után pedig 70,08%. Ezek adott pillanatban mért értékek, nem jelentenek garanciát a későbbi kapacitásra. A HAOS és a PhysioVision VM korábban I/O-hibás állapotba került, később ismét futottak.
 
-A Jellyfin fő SQLite-adatbázisa sérült volt. A helyreállítás **másolaton** történt; az újraépített adatbázis átment az `integrity_check` ellenőrzésen, a Jellyfin elindult, a Next Up visszatért. Ettől különállóan az Intro Skipper DLL `System.BadImageFormatException / Bad IL format` hibát adott; a bővítmény hibájának végleges javítását **nem igazoltuk**.
+A Jellyfin fő SQLite-adatbázisa sérült volt. A helyreállítás **másolaton** történt; az újraépített adatbázis átment az `integrity_check` ellenőrzésen, a Jellyfin elindult, a Next Up visszatért. Ettől különállóan az Intro Skipper DLL `System.BadImageFormatException / Bad IL format` hibát adott; a bővítmény végleges helyreállása **nincs dokumentálva**.
 
 ## Biztonságos eljárás
 
