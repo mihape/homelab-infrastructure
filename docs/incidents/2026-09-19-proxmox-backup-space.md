@@ -1,22 +1,24 @@
-# Proxmox root filesystem filled by local backups
+# Helyi mentések miatt megtelt a Proxmox root fájlrendszere
 
-**Date:** 2026-09-19 (CEST)  
-**Scope:** Proxmox local backup storage, nas/nas2 storage availability.  
-**Status:** Capacity pressure identified; deletion and service recovery unverified in the available record.
+**Dátum:** 2026-09-19 (CEST)  
+**Érintett rendszer:** Proxmox helyi mentéstárolója, nas/nas2 elérhetőség.  
+**Állapot:** A tárhelyproblémát azonosítottuk; a törlések és a végleges helyreállás a rendelkezésre álló feljegyzésből nem igazolhatók.
 
-## Evidence
+## Bizonyítékok
 
-The root filesystem was reported full (68 GB total) and /var accounted for approximately 62 GB. The backup directory /var/lib/vz/dump held around 60 GB of archives; the journal was smaller. Inode consumption was low, so this was a **block-capacity** issue rather than inode exhaustion. The external nas and nas2 stores were unavailable at the check. local and local-lvm consumption must be diagnosed independently.
+A root fájlrendszer megtelt (összesen 68 GB), a `/var` körülbelül 62 GB-ot foglalt. A `/var/lib/vz/dump` mentéskönyvtár körülbelül 60 GB archívumot tartalmazott; a journal kisebb volt. Az inode-foglaltság alacsony maradt, tehát **nem inode-, hanem blokkkapacitási** problémáról volt szó. A `nas` és `nas2` külső tárolók ekkor nem voltak elérhetők. A `local` és `local-lvm` foglaltsága külön vizsgálandó.
 
-Removing two older backups was proposed, but their actual removal was not confirmed in the record. Do not describe that remediation as completed.
+Két régebbi mentés eltávolítása felmerült, de a törlést a feljegyzés nem igazolja. Ezért nem szerepel befejezett javításként.
 
-## Safe checks
+## Biztonságos ellenőrzések
 
-    df -h /
-    du -xhd1 /var/lib/vz /var/log 2>/dev/null
-    pvesm status
-    pvesm list local --content backup
-    cat /etc/pve/storage.cfg
-    find /var/lib/vz/dump -maxdepth 1 -type f -printf '%TY-%Tm-%Td %10s %f\n' | sort
+```bash
+df -h /
+du -xhd1 /var/lib/vz /var/log 2>/dev/null
+pvesm status
+pvesm list local --content backup
+cat /etc/pve/storage.cfg
+find /var/lib/vz/dump -maxdepth 1 -type f -printf '%TY-%Tm-%Td %10s %f\n' | sort
+```
 
-Before deleting backups, confirm retention, another **tested** restore point and the configured scheduled backup destination. Investigate why nas/nas2 were unavailable; configure alerts for root and thin-pool usage.
+Mentés törlése előtt ellenőrizni kell a megőrzési szabályt, egy másik **kipróbált** visszaállítási lehetőséget és az ütemezett mentések célhelyét. Kivizsgálandó a nas/nas2 elérhetetlensége; indokolt a root fájlrendszer és a thin pool kapacitásriasztása.
