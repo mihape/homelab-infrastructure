@@ -25,7 +25,7 @@ A táblázat nem élő szolgáltatásleltár, és nem jelent vállalati magas re
 - [Incidensnapló](docs/incidents/README.md) – dátumozott esetek, tünetek, beavatkozások, ellenőrzés és nyitott kérdések.
 - [Tömeges LXC IPv4-ütközés](docs/incidents/2026-09-lxc-ip-conflicts.md) – hibakeresés Windows-kliens, DHCP és konténerinterfészek között.
 - [Proxmox IP Watch](docs/monitoring/proxmox-ip-watch.md) – Gotify-riasztások, systemd-időzítő, ellenőrzés és korlátok.
-- [IP Watch Bash-script](scripts/proxmox-ip-watch.sh) és [szimulált tesztek](tests/test-ip-watch.sh) – **javasolt továbbfejlesztés**, még nem bizonyítottan azonos az éles Proxmoxon futó változattal.
+- [IP Watch Bash-script](scripts/proxmox-ip-watch.sh) és [szimulált tesztek](tests/test-ip-watch.sh) – **még nem telepített fejlesztési változat**, amely eltér az éles Proxmoxon futó scripttől.
 - [Proxmox-tárhelyhiba](docs/incidents/2026-08-23-proxmox-storage-full.md) és [Jellyfin-helyreállítás](docs/incidents/2026-08-29-thin-pool-jellyfin.md) – az infrastruktúra és az alkalmazás helyreállását külön ellenőriztem.
 - [Windows Server / AD-labor](docs/labs/windows-server-ad.md) – telepített VM és egyértelműen **tervezettként** jelölt AD-gyakorlatok.
 
@@ -49,4 +49,4 @@ A táblázat nem élő szolgáltatásleltár, és nem jelent vállalati magas re
 
 Nem kerülnek ide jelszavak, tokenek, VPN-kulcsok, ügyfél- és munkáltatói adatok, teljes mentések vagy szerkesztetlen céges konfigurációk. A munkatapasztalatomat és a saját homelabban végzett gyakorlatot külön kezelem. A tervezett feladat nem befejezett eredmény, és egy sikeres újraindítás önmagában nem bizonyított gyökérok.
 
-A dokumentáció és egyes scriptek AI-támogatással készültek; a ténylegesen ellenőrzött eredményeket és a még ki nem próbált javaslatokat külön jelölöm.
+Egyes dokumentációs és fejlesztési feladatokhoz AI-eszközöket is használok. A ténylegesen kipróbált megoldásokat és a fejlesztési terveket külön jelölöm.
