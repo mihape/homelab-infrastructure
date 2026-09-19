@@ -22,4 +22,4 @@ A szeptemberi incidens után készült figyelőről: [Proxmox IP Watch üzemelte
 - Ha nem ismert a hiba oka vagy a végső állapot, ezt egyértelműen jelölöm.
 - Jelszó, token, privát kulcs, részletes belső leltár és szerkesztetlen napló nem kerül nyilvános repóba.
 
-További megfigyelés: 2026-08-10-én az SMB/X-plore kapcsolat időtúllépéssel hibázott, de a konténer és a végső megoldás nem volt kellően igazolt egy külön esettanulmányhoz.
+További megfigyelés: 2026-08-10-én az SMB/X-plore kapcsolat időtúllépéssel hibázott, de az érintett konténert és a helyreállítás menetét nem dokumentáltam teljes körűen.
