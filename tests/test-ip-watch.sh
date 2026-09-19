@@ -37,7 +37,8 @@ chmod +x "$TMP/bin/pct" "$TMP/bin/curl"
 printf 'GOTIFY_URL=http://example.invalid/message\n' > "$TMP/config"
 printf 'test-token\n' > "$TMP/token"
 export PATH="$TMP/bin:$PATH" CALLS="$TMP/calls" IP_WATCH_CONFIG="$TMP/config" IP_WATCH_TOKEN_FILE="$TMP/token" IP_WATCH_STATE_DIR="$TMP/state"
-watch() { "$ROOT/scripts/proxmox-ip-watch.sh" >/dev/null 2>&1; }
+# GitHub Contents API stores new files without an executable bit; invoke Bash explicitly.
+watch() { bash "$ROOT/scripts/proxmox-ip-watch.sh" >/dev/null 2>&1; }
 count() { [[ -f "$CALLS" ]] && wc -l < "$CALLS" || echo 0; }
 assert_count() { [[ "$(count)" == "$1" ]] || { echo "FAIL: expected $1 messages, got $(count)"; exit 1; }; }
 CASE=normal watch; assert_count 0
