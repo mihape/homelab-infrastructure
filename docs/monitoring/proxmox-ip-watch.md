@@ -1,44 +1,44 @@
-# Proxmox IP Watch
+# Proxmox IP Watch – üzemeltetési leírás
 
-**Introduced:** 2026-09-19. The operator supplied the live script for review on this date; the versioned script is a **proposed revision, not yet deployed**.
+**Bevezetés:** 2026-09-19. Ezen a napon a ténylegesen futó scriptet is megkaptam ellenőrzésre. A GitHubon tárolt változat **továbbfejlesztési javaslat, még nem lett telepítve**.
 
-## Purpose
+## Cél és működés
 
-Following the [mass LXC IPv4 conflict](../incidents/2026-09-lxc-ip-conflicts.md), a host-side check monitors IPv4 addresses on `eth0` of running LXC guests. It reports zero or multiple IPv4 addresses and duplicates among inspected containers. It does not automatically repair or restart them.
+A [tömeges LXC IPv4-ütközés](../incidents/2026-09-lxc-ip-conflicts.md) után a Proxmox hoston futó figyelő ellenőrzi a futó konténerek `eth0` interfészének IPv4-címeit. Jelzi a hiányzó vagy többes címzést, illetve ha a megvizsgált konténerek közül kettő azonos IPv4-et használ. **Nem javít és nem indít újra automatikusan**.
 
-## Confirmed host deployment
+## A Proxmoxon igazolt telepítés
 
-| Component | Location or setting |
+| Összetevő | Elérési út vagy beállítás |
 | --- | --- |
-| Live script | `/usr/local/sbin/proxmox-ip-watch.sh` |
-| Token | `/etc/proxmox-ip-watch/token` (root-only; **do not commit**) |
-| State | `/var/lib/proxmox-ip-watch/status` |
-| Service | `proxmox-ip-watch.service`, oneshot |
-| Timer | `proxmox-ip-watch.timer`, every five minutes |
-| Notifications | Gotify application token; alert on changed problem report and recovery |
+| Élő script | `/usr/local/sbin/proxmox-ip-watch.sh` |
+| Token | `/etc/proxmox-ip-watch/token` (csak root; **nem kerül Gitbe**) |
+| Állapot | `/var/lib/proxmox-ip-watch/status` |
+| Szolgáltatás | `proxmox-ip-watch.service`, oneshot |
+| Időzítő | `proxmox-ip-watch.timer`, ötpercenként |
+| Értesítés | Gotify alkalmazástoken; állapotváltozás és helyreállás jelzése |
 
-The live file sets a local LAN Gotify URL **inside the script**, reads the application token from its separate local file, skips containers whose `net0` has `ip=manual`, and queries `pct list` through process substitution. It uses `set -uo pipefail`, sequential `pct exec` calls and state changes only on successful Gotify delivery. The operator posted the file, **not the token**.
+Az élő fájl **a scripten belül** tartalmaz egy helyi Gotify-URL-t, a tokent külön fájlból olvassa. Kihagyja a `net0` alatt `ip=manual` beállítású konténereket, a `pct list` kimenetét process substitution útján dolgozza fel. `set -uo pipefail` beállítással, egymás utáni `pct exec` hívásokkal működik; az állapotot csak sikeres Gotify-küldés után menti. A megosztott fájl **nem tartalmazta a tokent**.
 
-The original timer displayed `NEXT: -` with `OnUnitActiveSec`. It was changed to `OnCalendar=*-*-* *:00/5:00`, and the operator confirmed a next execution was scheduled. A completed oneshot service normally reads `inactive (dead)`; inspect its result **and** the timer.
+Az eredeti, `OnUnitActiveSec` alapú időzítőnél `NEXT: -` jelent meg. Ezt `OnCalendar=*-*-* *:00/5:00` ütemezésre cseréltük; utána a következő futási időt a felhasználó megerősítette. A sikeresen befejezett oneshot szolgáltatás `inactive (dead)` állapota normális: a kilépési eredményt **és** a timer következő időpontját is ellenőrizni kell.
 
-## Version-controlled proposed revision
+## GitHubon verziókezelt, javasolt változat
 
-[`scripts/proxmox-ip-watch.sh`](../../scripts/proxmox-ip-watch.sh) is a **portable revision**, distinct from the verified live host file. It adds a root-controlled external `GOTIFY_URL` configuration, `flock` to avoid overlapping runs, bounded per-guest calls using `timeout`, and explicit handling of failed guest inventory. Unlike the live version it currently inspects all running guests, including any configured with `ip=manual`; review the monitoring policy before deploying.
+A [`scripts/proxmox-ip-watch.sh`](../../scripts/proxmox-ip-watch.sh) egy **hordozhatóbb, külön fejlesztett változat**, nem azonos az igazoltan futó hostfájllal. Külső, root által kezelt `GOTIFY_URL`-konfigurációt, `flock` alapú futási zárolást, `timeout` alapú konténerenkénti időkorlátot és sikertelen konténerlista-lekérdezés esetére külön hibakezelést ad hozzá. Fontos eltérés: ez a verzió jelenleg **az `ip=manual` beállítású futó konténereket is ellenőrzi**; bevezetés előtt át kell gondolni, mely vendégek tartoznak a figyelésbe.
 
-[Mock tests](../../tests/test-ip-watch.sh) exercise normal state, duplicate/multiple/missing IPs, recovery, an inaccessible guest, inventory errors and a failed notification. GitHub Actions passed its Bash syntax, mocked behavior and ShellCheck steps on 2026-09-19 after fixing the test runner to invoke Bash explicitly. **This CI run did not validate the live Proxmox environment or real Gotify delivery.**
+A [szimulált tesztek](../../tests/test-ip-watch.sh) kipróbálják a normál állapotot, a hiányzó/többszörös/ütköző IP-címeket, a helyreállást, az elérhetetlen vendéget, a hibás konténerlistát és a sikertelen értesítést. A GitHub Actions Bash-szintaxis-, működési és ShellCheck-ellenőrzése 2026-09-19-én **sikeresen lefutott**, miután a tesztindítást javítottuk. **Ez nem bizonyítja a valódi Proxmox- és Gotify-kapcsolat működését.**
 
-The repository script is **not** advertised as running on the host. Before deployment, back up the live file, review the behavioral differences and configuration, run a controlled test, and verify the timer. Never copy a public example over an operational script without an explicit rollout.
+A repóban lévő változatot **nem állítom be élesként**. Telepítése előtt biztonsági másolatot kell készíteni a futó fájlról, áttekinteni a működésbeli eltéréseket, kontrolláltan kipróbálni, végül ellenőrizni az időzítőt.
 
-Local-only configuration example (not a real address or secret):
+Csak a saját hoston létrehozandó konfigurációs példa (nem valós cím vagy titok):
 
 ```bash
-# /etc/proxmox-ip-watch/config — root-owned, mode 600
+# /etc/proxmox-ip-watch/config – root tulajdon, 600-as jogosultság
 GOTIFY_URL='https://your-gotify.example/message'
 ```
 
-The token stays at `/etc/proxmox-ip-watch/token` with mode 600. Neither file belongs in Git.
+A token továbbra is a `/etc/proxmox-ip-watch/token` fájlban marad, 600-as jogosultsággal. **Egyik helyi fájl sem kerül a repóba.**
 
-## Verification
+## Ellenőrző parancsok
 
 ```bash
 bash -n scripts/proxmox-ip-watch.sh
@@ -49,17 +49,17 @@ systemctl list-timers --all proxmox-ip-watch.timer
 journalctl -u proxmox-ip-watch.service -n 50 --no-pager
 ```
 
-An early live run took approximately **20 seconds wall time, 19.5 CPU-seconds and 121 MiB peak memory**. Repeated `pct exec` calls may need optimization as guest count grows.
+Egy korai éles futás mérési adata: körülbelül **20 másodperc tényleges futási idő, 19,5 CPU-másodperc és 121 MiB maximális memóriafoglalás**. A sok `pct exec` hívás később optimalizálást indokolhat.
 
-## Troubleshooting and limitations
+## Hibakeresés és korlátok
 
-- HTTP 401 from Gotify: check whether the file contains the **application** token; never print or publish it.
-- The initial deployment used local HTTP; prefer a trusted HTTPS endpoint where practical.
-- After timer edits: `systemctl daemon-reload`, restart the timer, inspect `NEXT`.
-- The state file suppresses **identical reports**, not every notification throughout an evolving incident.
-- Only running guests and their `eth0` are checked: other LAN hosts, other interfaces and intermittent DHCP failures are not covered.
-- Gotify cannot alert through itself if Gotify is down; independent heartbeat monitoring is future work.
+- Gotify HTTP 401 esetén ellenőrizni kell, hogy **alkalmazástoken** került-e a fájlba; a tokent tilos kiírni vagy publikálni.
+- A kezdeti telepítés helyi HTTP-t használt; ahol lehetséges, hitelesített HTTPS-végpont javasolt.
+- Timer-módosítás után `systemctl daemon-reload`, az időzítő újraindítása és a `NEXT` oszlop ellenőrzése szükséges.
+- Az állapotfájl az **azonos hibajelentéseket** szűri, nem garantál egyetlen értesítést egy változó állapotú incidens alatt.
+- Csak a futó vendégek `eth0` interfésze szerepel: más LAN-eszközök, további interfészek és időszakos DHCP-hibák kimaradhatnak.
+- Ha a Gotify nem érhető el, ezen keresztül a figyelő sem tud riasztani. Külön heartbeat/független monitor későbbi feladat.
 
-## Follow-up
+## Következő feladat
 
-Review the proposed behavioral changes before switching the live file. Monitor repeated DHCPDECLINE events to identify early symptoms, and document a controlled failure-and-recovery alert test.
+A javasolt viselkedésbeli eltérések áttekintése az éles script cseréje előtt; DHCPDECLINE-események figyelése a hiba korábbi észleléséhez; ellenőrzött hiba–riasztás–helyreállás teszt dokumentálása.
