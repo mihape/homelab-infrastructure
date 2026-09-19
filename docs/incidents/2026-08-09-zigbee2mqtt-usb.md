@@ -1,22 +1,24 @@
-# Zigbee2MQTT LXC: USB device reassignment
+# Zigbee2MQTT LXC – USB-eszköz áthelyezése
 
-**Date:** 2026-08-09 (CEST)  
-**Scope:** Proxmox CT 121, USB serial passthrough, Zigbee2MQTT, Home Assistant.  
-**Status:** Configuration adjusted; end-to-end recovery not verified.
+**Dátum:** 2026-08-09 (CEST)  
+**Érintett rendszer:** Proxmox CT 121, USB soros eszköz átadása, Zigbee2MQTT, Home Assistant.  
+**Állapot:** Konfiguráció módosítva; a teljes körű helyreállás nincs igazolva.
 
-## Symptoms and evidence
+## Tünetek és megfigyelések
 
-After moving a USB radio between physical ports, the Zigbee2MQTT LXC could run while its web interface was unavailable. Troubleshooting involved serial device paths and passthrough. The setup also used a Sonoff multiprotocol Zigbee/Thread radio; do not assume every serial path referred to the same physical adapter.
+Az USB-rádió másik fizikai portra helyezése után a Zigbee2MQTT konténer futhatott úgy, hogy a webes felülete nem volt elérhető. A vizsgálat az eszközútvonalakra és az USB-átadásra is kiterjedt. Sonoff Zigbee/Thread multiprotokollos rádió is része volt a környezetnek; nem feltételezhető, hogy minden soros útvonal ugyanahhoz a fizikai adapterhez tartozott.
 
-## Diagnostics
+## Diagnosztika
 
-Run on the Proxmox host:
+A Proxmox hoston:
 
-    pct config 121
-    ls -l /dev/serial/by-id/ /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
-    pct exec 121 -- ip -4 -br addr
-    pct exec 121 -- journalctl -u zigbee2mqtt -n 100 --no-pager
+```bash
+pct config 121
+ls -l /dev/serial/by-id/ /dev/ttyUSB* /dev/ttyACM* 2>/dev/null
+pct exec 121 -- ip -4 -br addr
+pct exec 121 -- journalctl -u zigbee2mqtt -n 100 --no-pager
+```
 
-Match the actual adapter's persistent USB identity to the configured serial port. Confirm the radio, broker connection, frontend and device messages before declaring recovery. USB passthrough changes should be tested following a host reboot.
+A konfigurált soros portot a tényleges adapter tartós USB-azonosítójával kell egyeztetni. A helyreállás előtt külön ellenőrizendő a rádió, az MQTT broker, a webes felület és az eszközüzenetek működése. Az USB-átadást host-újraindítás után is célszerű tesztelni.
 
-**Unresolved:** The available record does not establish a durable final recovery; avoid claiming one.
+**Nyitott kérdés:** A rendelkezésre álló feljegyzés nem igazol tartós, teljes helyreállást.
