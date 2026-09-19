@@ -4,7 +4,7 @@
 
 ## Ami már elkészült
 
-A Windows Server telepítve van a 124-es VM-ben; ez egy saját Active Directory-tanulólabor kezdete. **Az AD DS szerepkör telepítése, a tartományvezérlővé előléptetés, a tartomány, OU-k, GPO-k, DNS-integráció és Windows-kliens tartományba léptetése még nem igazoltan kész.** Ez saját laborgyakorlat, nem vállalati AD-üzemeltetési tapasztalat.
+A Windows Server telepítve van a 124-es VM-ben; ez egy saját Active Directory-tanulólabor kezdete. **Az AD DS telepítését és a tartományvezérlő kialakítását még nem kezdtem el; tartomány, OU-k, GPO-k, DNS-integráció és tartományba léptetett kliens még nincs a laborban.** Ez saját laborgyakorlat, nem vállalati AD-üzemeltetési tapasztalat.
 
 ## Tervezett lépések – még nem elvégzett feladatok
 
