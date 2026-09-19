@@ -1,43 +1,43 @@
-# LXC IPv4 accumulation and address conflicts
+# LXC IPv4-címhalmozódás és IP-ütközések
 
-**Incident window:** 2026-09-18–19 (CEST)  
-**Scope:** Proxmox VE, Debian LXCs, ImmortalWrt DHCP, LAN clients  
-**Last verified state:** Services restored; initiating trigger **unknown**.
+**Időszak:** 2026-09-18–19 (CEST)  
+**Érintett rendszer:** Proxmox VE, Debian LXC-k, ImmortalWrt DHCP, LAN-kliensek.  
+**Utoljára igazolt állapot:** A szolgáltatások helyreálltak; a kiváltó ok **nem ismert**.
 
-## Impact
+## Hatás
 
-A Windows laptop reported a duplicate DHCP address and subsequently fell back to an APIPA (169.254.x.x) IPv4 address; some IPv6 Internet connectivity still worked. LAN IPv4 access and Microsoft Teams were impaired. Some Xiaomi devices also lost connectivity. The problem affected more than a single container.
+Egy Windows laptop duplikált DHCP-címet jelzett, majd APIPA-tartományú (169.254.x.x) IPv4-címet kapott. IPv6-on az internet részben működött, de a helyi IPv4-elérés és a Microsoft Teams hibázott. Egyes Xiaomi-eszközök is elvesztették a kapcsolatot. A probléma nem egyetlen konténerre korlátozódott.
 
-## Evidence
+## Bizonyítékok
 
-Multiple running LXC interfaces simultaneously accumulated **dozens of dynamic IPv4 addresses**, sometimes including addresses also present on another guest. The router's neighbor entry associated the laptop's conflicting address with the MAC of the Nginx Proxy Manager container, despite that container having a different intended reservation. Examples recorded during the investigation:
+Több futó LXC `eth0` interfészén **több tucat dinamikus IPv4-cím** halmozódott fel egyszerre; egyes címek több vendégen is előfordultak. A router szomszédtáblája a laptop ütköző címét a Nginx Proxy Manager konténer MAC-címéhez rendelte, pedig annak másik IP-cím volt fenntartva.
 
-| Guest | IPv4 addresses on eth0 before intervention | Response |
+| Konténer | IPv4-címek száma az eth0 interfészen | Beavatkozás és ellenőrzés |
 | --- | ---: | --- |
-| CT 109, Vaultwarden | 88 | Configure static IPv4; restart; one address after |
-| CT 111, Homepage | 82 | Restart under DHCP; one address after |
-| CT 115, Grafana | 80 | Restart under DHCP; one address after |
-| CT 118, Cinephage | 0 | Restart; IPv4 restored |
-| CT 120, ErsatzTV | 0 | Restart; IPv4 restored |
-| CT 121, Zigbee2MQTT | 84 | Configure static IPv4; restart; one address after |
-| CT 122, Bazarr | 83 | Restart under DHCP; one address after |
-| CT 123, reverse proxy | More than 80 | Configure static IPv4; restart; one address after |
+| CT 109, Vaultwarden | 88 | Statikus IPv4, újraindítás; utána egy cím |
+| CT 111, Homepage | 82 | Újraindítás DHCP-vel; utána egy cím |
+| CT 115, Grafana | 80 | Újraindítás DHCP-vel; utána egy cím |
+| CT 118, Cinephage | 0 | Újraindítás; IPv4 visszatért |
+| CT 120, ErsatzTV | 0 | Újraindítás; IPv4 visszatért |
+| CT 121, Zigbee2MQTT | 84 | Statikus IPv4, újraindítás; utána egy cím |
+| CT 122, Bazarr | 83 | Újraindítás DHCP-vel; utána egy cím |
+| CT 123, reverse proxy | Több mint 80 | Statikus IPv4, újraindítás; utána egy cím |
 
-The guest counts are **incident snapshots**, not a present-day CMDB. CT 109, 121 and 123 received static guest addressing; other affected guests remained on DHCP.
+A számok **incidens közben készült pillanatképek**, nem aktuális konfigurációs leltár. A CT 109, 121 és 123 vendégoldali statikus címet kapott; a többi érintett konténer DHCP-n maradt.
 
-Router-side logs showed repeated DHCPACK followed by DHCPDECLINE for a container. A short packet capture of an unaffected phone's renewal showed a response from the intended router, but it was **too brief to exclude** an intermittent rogue DHCP server. In examined guests, systemd-networkd reported eth0 as *unmanaged*; the proposed dual-network-manager explanation was not proven.
+A router naplóiban egy konténernél egymást követő DHCPACK és DHCPDECLINE események jelentek meg. Egy nem érintett telefon rövid DHCP-címmegújítási csomagrögzítésében a várt router válaszolt, de ez **nem volt elegendő** egy időszakosan működő idegen DHCP-szerver kizárására. A vizsgált vendégeken a systemd-networkd az `eth0` interfészt *unmanaged* állapotúnak mutatta; a két hálózatkezelő közti konfliktus **nem bizonyított ok**.
 
-## Recovery and validation
+## Helyreállítás és ellenőrzés
 
-The laptop was temporarily assigned an unused-at-the-time address outside the normal dynamic pool to regain LAN connectivity. Containers were then inspected and remediated one by one. Each affected guest returned to one IPv4 on eth0 or obtained a missing address. Xiaomi devices reconnected following the cleanup and device restart; **the router was not rebooted for this recovery**.
+A laptop átmenetileg a normál DHCP-kiosztáson kívüli, akkor szabadnak tűnő statikus IPv4-címet kapott. A konténereket ezután egyenként ellenőriztük és javítottuk. Az érintett vendégekben egy IPv4 maradt vagy visszatért a hiányzó cím. Az érintett Xiaomi-eszközök a helyreállítás és saját újraindítás után újra csatlakoztak; **a routert ehhez nem indítottuk újra**.
 
-A Proxmox/Gotify monitor was added following the incident: [IP Watch runbook](../monitoring/proxmox-ip-watch.md).
+Az eset után Proxmox/Gotify-figyelő készült: [IP Watch üzemeltetési leírás](../monitoring/proxmox-ip-watch.md).
 
-Restarts corrected observed state but do **not** establish the root cause was eliminated. The laptop's temporary static setting should be removed once DHCP is verified healthy and its replacement address checked for conflicts.
+Az újraindítás a megfigyelt állapotot javította, de **nem bizonyítja**, hogy az eredeti kiváltó ok megszűnt. A laptop átmeneti statikus beállítását akkor kell visszaállítani DHCP-re, ha a kiosztás egészséges, és az új címen nincs ütközés.
 
-## Read-only triage if it recurs
+## Nem módosító diagnosztika ismétlődéskor
 
-On Proxmox:
+Proxmoxon:
 
 ```bash
 pct list
@@ -47,22 +47,22 @@ pct exec 121 -- ps aux
 pct exec 121 -- journalctl -b --no-pager
 ```
 
-On ImmortalWrt:
+ImmortalWrt-n:
 
 ```sh
 uci show dhcp.lan
 cat /tmp/dhcp.leases
 logread | grep -Ei 'DHCPACK|DHCPDECLINE|DHCPNAK|DHCPOFFER' | tail -n 100
-# Capture traffic during an affected client's actual renewal:
+# Csomagrögzítés az érintett kliens valódi címmegújítása közben:
 tcpdump -ni br-lan -e -vvv 'udp port 67 or udp port 68'
 ```
 
-Record the **earliest** duplication, MAC addresses, DHCP server identifiers, assigned addresses, guest state and timestamps *before* restarting affected containers. Inspect guest network-manager and Proxmox network settings and audit DHCP servers. Do not infer an initiating defect from the restoration action alone.
+**Az első ütközést** érdemes rögzíteni: időpont, MAC-címek, DHCP-szerverazonosítók, kiosztott címek és vendégállapotok – lehetőleg még újraindítás előtt. Ellenőrizni kell a vendégoldali hálózatkezelést, a Proxmox-konfigurációt és a hálózaton elérhető DHCP-szervereket.
 
-## Open follow-up
+## Nyitott feladatok
 
-- Capture the first reproducible address accumulation and full DHCP trace.
-- Check MAC-to-reservation mapping and intentional versus accidental static addresses.
-- Verify monitor behavior after lease renewals, not just after restarts.
-- Recheck laptop DHCP configuration and storage/network dependencies.
-- Keep sensitive configuration and credentials out of the public repository.
+- Az első reprodukálható címhalmozódás és a teljes DHCP-forgalom rögzítése.
+- MAC-címek, foglalások és szándékos vagy véletlen statikus címek ellenőrzése.
+- A figyelő működésének ellenőrzése DHCP-címmegújításkor is, nem csak újraindítás után.
+- A laptop DHCP-beállításának, illetve a hálózat és tárhely függőségeinek újbóli ellenőrzése.
+- Titkok és belső konfigurációk távol tartása a publikus repótól.
