@@ -21,4 +21,4 @@ pct exec 121 -- journalctl -u zigbee2mqtt -n 100 --no-pager
 
 A konfigurált soros portot a tényleges adapter tartós USB-azonosítójával kell egyeztetni. A helyreállás előtt külön ellenőrizendő a rádió, az MQTT broker, a webes felület és az eszközüzenetek működése. Az USB-átadást host-újraindítás után is célszerű tesztelni.
 
-**Nyitott kérdés:** A rendelkezésre álló feljegyzés nem igazol tartós, teljes helyreállást.
+**Nyitott kérdés:** Nem készült a tartós működést és a teljes helyreállást igazoló utóellenőrzés.
