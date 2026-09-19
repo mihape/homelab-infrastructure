@@ -1,25 +1,25 @@
-# Incident register
+# Incidensnapló
 
-This register captures hands-on troubleshooting in a Proxmox VE homelab. Events are historical snapshots, **not** a verified current inventory or evidence that every root cause is fixed.
+Ez a napló a Proxmox VE homelabban végzett valós hibakereséseket foglalja össze. Az esetek **korabeli állapotokat** mutatnak: nem jelentenek naprakész eszközleltárt, és nem minden hiba kiváltó oka bizonyított.
 
-| Date (CEST) | Case | Last verified state |
+| Dátum (CEST) | Eset | Utoljára igazolt állapot |
 | --- | --- | --- |
-| 2026-08-09 | [Zigbee2MQTT / USB passthrough](2026-08-09-zigbee2mqtt-usb.md) | Configuration adjusted; end-to-end recovery not verified |
-| 2026-08-10 | [AdGuard filesystem pressure](2026-08-10-adguard-rootfs.md) | Working after rootfs expansion |
-| 2026-08-23 | [Proxmox storage exhaustion](2026-08-23-proxmox-storage-full.md) | Guests brought back in stages; further recovery needed |
-| 2026-08-25–31 | [Tailscale and IPv4/DHCP availability](2026-08-25-tailscale-dhcp.md) | Access restored; trigger unconfirmed |
-| 2026-08-29 | [Thin pool and Jellyfin database](2026-08-29-thin-pool-jellyfin.md) | VMs and Jellyfin Next Up recovered; Intro Skipper unresolved |
-| 2026-08-31 | [ImmortalWrt upgrade](2026-08-31-immortalwrt-upgrade.md) | Internet returned; transient cause unknown |
-| 2026-09-18–19 | [Mass LXC IPv4 conflicts](2026-09-lxc-ip-conflicts.md) | Services recovered; initiating cause unknown |
-| 2026-09-19 | [Backups filling Proxmox root](2026-09-19-proxmox-backup-space.md) | Storage pressure identified; cleanup not verified |
+| 2026-08-09 | [Zigbee2MQTT / USB-eszköz átadása](2026-08-09-zigbee2mqtt-usb.md) | Konfiguráció módosítva; a teljes helyreállás nincs igazolva |
+| 2026-08-10 | [AdGuard tárhelyprobléma](2026-08-10-adguard-rootfs.md) | A fájlrendszer bővítése után működött |
+| 2026-08-23 | [Proxmox-tárhely betelése](2026-08-23-proxmox-storage-full.md) | A vendégek fokozatosan indultak; további helyreállításra volt szükség |
+| 2026-08-25–31 | [Tailscale és IPv4/DHCP elérés](2026-08-25-tailscale-dhcp.md) | Elérés helyreállt; a kiváltó ok nem bizonyított |
+| 2026-08-29 | [Thin pool és Jellyfin-adatbázis](2026-08-29-thin-pool-jellyfin.md) | VM-ek és Next Up helyreálltak; Intro Skipper nyitva maradt |
+| 2026-08-31 | [ImmortalWrt-frissítés](2026-08-31-immortalwrt-upgrade.md) | Internet visszatért; az átmeneti hiba oka ismeretlen |
+| 2026-09-18–19 | [Tömeges LXC IPv4-ütközések](2026-09-lxc-ip-conflicts.md) | Szolgáltatások helyreálltak; a kiinduló ok ismeretlen |
+| 2026-09-19 | [Mentések miatt megtelt Proxmox root](2026-09-19-proxmox-backup-space.md) | Tárhelyprobléma azonosítva; a takarítás nincs igazolva |
 
-See [Proxmox IP Watch](../monitoring/proxmox-ip-watch.md) for the preventive monitor introduced after the September incident.
+A szeptemberi incidens után készült figyelőről: [Proxmox IP Watch üzemeltetési leírás](../monitoring/proxmox-ip-watch.md).
 
-## Incident documentation principles
+## Dokumentálási elvek
 
-- Separate observed symptoms, evidence, remediation, verification and unresolved hypotheses.
-- Never treat restarting a guest as proof of a permanent fix.
-- Record where evidence ended rather than inventing a resolution.
-- Do not publish full device inventories, live credentials, private keys, Gotify tokens or unredacted logs.
+- A tüneteket, bizonyítékokat, beavatkozásokat, ellenőrzést és feltételezéseket külön írom le.
+- Egy konténer újraindítása önmagában nem bizonyítja a tartós javítást.
+- Ha nem ismert a hiba oka vagy a végső állapot, ezt egyértelműen jelölöm.
+- Jelszó, token, privát kulcs, részletes belső leltár és szerkesztetlen napló nem kerül nyilvános repóba.
 
-A separate historical observation: SMB/X-plore access timed out on 2026-08-10, but the container identity and resolution were not established well enough for a full case study.
+További megfigyelés: 2026-08-10-én az SMB/X-plore kapcsolat időtúllépéssel hibázott, de a konténer és a végső megoldás nem volt kellően igazolt egy külön esettanulmányhoz.
