@@ -1,52 +1,48 @@
-# Enterprise Home Lab & Infrastructure Portfolio
+# Homelab Infrastructure
 
-Welcome to my central infrastructure documentation repository. This document outlines the architecture, networking, and service deployment of my high-availability Proxmox VE home lab environment, built to enterprise security standards.
+A practical Proxmox VE homelab used to develop Linux, virtualization, networking, service operations and incident-response skills. This repository documents **observed operations, diagnostics, recovery actions and unfinished investigations**; it is not a claim of production high availability or an enterprise-certified security architecture.
 
-## Hardware Specifications
-*   **Hypervisor Host:** Dell OptiPlex 7000 (Intel Core i5-12500)
-*   **Core Router:** Xiaomi AX3600 running custom Immortal OpenWrt firmware
-*   **Environment:** Proxmox Virtual Environment (PVE)
+## Platform and services
 
-##  Virtualization & Services Topology
-Services are logically separated based on resource demands and security profiles, utilizing a mix of lightweight Linux Containers (LXC - Debian) and full Virtual Machines (VM).
+| Area | Tools and workloads documented |
+| --- | --- |
+| Virtualization | Proxmox VE, Linux containers (LXC) and VMs |
+| Routing and remote access | Xiaomi AX3600 running ImmortalWrt, DHCP/DNS troubleshooting, Tailscale |
+| Internal services | AdGuard Home, Vaultwarden, reverse proxy, Gotify |
+| Smart home | Home Assistant OS, Zigbee2MQTT and MQTT |
+| Media | Jellyfin and related automation services |
+| Monitoring | Gotify and a custom Proxmox LXC IPv4 watcher |
 
-###  Core Infrastructure, Security & Routing
-*   **Tailscale (Debian LXC):** Decentralized, Zero-Trust mesh VPN for secure remote administration.
-*   **AdGuard Home (LXC):** Network-wide ad blocking and local DNS resolution.
-*   **Nginx-UI (LXC):** Centralized Reverse Proxy handling internal routing and SSL termination.
-*   **Vaultwarden (LXC):** Self-hosted, encrypted password management.
-*   **Dashboards:** Homepage & Heimdall-Dashboard for unified service access.
+This table summarizes technologies encountered in the documented lab. It is **not** a live configuration inventory, statement of continuous availability or exhaustive service list.
 
-###  Productivity, Cloud & Custom Apps
-*   **ownCloud (VM):** Isolated file hosting and synchronization.
-*   **Paperless-ngx (LXC):** Automated, OCR-powered document management system.
-*   **PhysioVision (VM - Docker):** Custom-developed, private AI/Computer Vision application running in an isolated Docker environment.
+## Operational documentation
 
-###  Smart Home & Automation
-*   **Home Assistant OS (VM):** Core automation hub with Google Home Backup integration.
-*   **IoT Protocols:** MQTT Broker (Mosquitto), Zigbee2MQTT.
-*   **Local AI:** Piper & Whisper for private, on-premise voice processing.
+- [Incident register](docs/incidents/README.md): dated cases with the **last confirmed outcome**, diagnostics and outstanding questions.
+- [Mass LXC IPv4 accumulation and DHCP conflicts](docs/incidents/2026-09-lxc-ip-conflicts.md): investigation, impact, measured guest address counts and staged remediation.
+- [Proxmox IP Watch](docs/monitoring/proxmox-ip-watch.md): Gotify alerting, a systemd timer, verification commands and monitor limitations.
+- [Proxmox storage exhaustion](docs/incidents/2026-08-23-proxmox-storage-full.md) and [thin-pool/Jellyfin recovery](docs/incidents/2026-08-29-thin-pool-jellyfin.md): capacity analysis and application integrity.
+- [Tailscale/DHCP incident](docs/incidents/2026-08-25-tailscale-dhcp.md): distinguishing overlay reachability from guest IPv4 availability.
 
-###  Media & Content Delivery
-*   **Jellyfin & ErsatzTV (LXC):** Local media streaming and custom IPTV channel generation.
-*   **Automation Stack (LXC):** qBittorrent, Sonarr, Radarr, Prowlarr, Overseerr, Bazarr.
+## Operating approach
 
-###  Monitoring & Alerting
-*   **Uptime Kuma (LXC):** Real-time status tracking and latency monitoring.
-*   **Gotify (LXC):** Self-hosted push notification server linked with Uptime Kuma for instant Telegram alerts on service degradation.
-*   **Grafana (LXC):** Deployed for future advanced metric visualization.
-*   **Alpine-IT-Tools (LXC):** Lightweight container for rapid network troubleshooting.
+1. Identify **impact** and capture reproducible evidence (logs, leases, addresses, capacity, timestamps).
+2. Distinguish an **observation** from a hypothesis about the root cause.
+3. Apply changes to one service or container at a time where feasible.
+4. Verify both infrastructure state **and** application behavior.
+5. Document unresolved issues and add monitoring where the incident exposed an observability gap.
 
-##  Network Security & Segmentation (OpenWrt)
-The network architecture adheres to enterprise security standards, implementing strict zone-based firewalling on the OpenWrt core router (Xiaomi AX3600):
-*   **Air-Gapped IoT Zone:** Smart devices (IoT Interface `192.168.10.1/24`) are explicitly denied WAN (Internet) access via OpenWrt Zone Forwards (`IoT => REJECT`).
-*   **Microsegmentation & ACLs:** Traffic from the isolated IoT zone to the main LAN is tightly controlled using port-specific forwarding rules (e.g., permitting only TCP 1883 for MQTT traffic and UDP 5353 for NestMini mDNS).
-*   **Secrets Management:** All sensitive configurations and credentials are managed via `.env` files and explicitly excluded from version control via `.gitignore`.
+Examples in the incident documents are **diagnostic references**, not scripts to run blindly against another environment. Some incidents were recovered operationally while their initiating causes remain unknown.
 
-##  Future Roadmap & Continuous Integration
-- [ ] Migrate current OpenWrt zone-based isolation to strict 802.1Q VLAN tagging across the switch and Proxmox host (CCNA 2 SRWE objective).
-- [ ] Transition manual configuration deployments to **Ansible** playbooks.
-- [ ] Integrate **Jira Service Management** workflows for ticketing and change-management tracking of the lab.
+## Development roadmap
 
----
-> * **Development Note:** The core logic and boilerplate for specific automation scripts and configurations within this repository were rapidly prototyped utilizing AI-assisted tooling, with manual architectural oversight, testing, and deployment by the author.*
+- [ ] Capture and version the verified live Proxmox IP Watch script without secrets.
+- [ ] Add a monitored restore test and documented backup retention policy.
+- [ ] Add root-filesystem and thin-pool capacity alerting.
+- [ ] Inventory service roles, network segmentation and VM/LXC resources from the *current* configuration.
+- [ ] Introduce ShellCheck and small reproducible automation where appropriate.
+
+## Scope and security
+
+This is a **public** repository. Do not commit access tokens, VPN keys, credentials, full backup archives, private security-sensitive configuration or unredacted service logs. Historical dates, guests and addresses are not guaranteed current.
+
+Documentation and some automation were developed with AI assistance and reviewed through hands-on troubleshooting; the incident records distinguish user-confirmed results from unverified outcomes.
