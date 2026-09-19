@@ -1,19 +1,21 @@
-# AdGuard Home: LXC root filesystem pressure
+# AdGuard Home – betelő LXC-fájlrendszer
 
-**Date:** 2026-08-10 (CEST)  
-**Scope:** AdGuard Home CT 107, DNS availability.  
-**Status:** Service recovered following filesystem expansion; initiating growth pattern not established.
+**Dátum:** 2026-08-10 (CEST)  
+**Érintett rendszer:** AdGuard Home, CT 107; DNS-elérhetőség.  
+**Állapot:** Fájlrendszer-bővítés után a szolgáltatás helyreállt; a tárhelynövekedés oka nem lett tisztázva.
 
-## Evidence
+## Bizonyítékok
 
-The LXC was running but AdGuard and IPv4 connectivity were not functioning normally. Its 2 GB root filesystem was nearly full. After increasing it to 6 GB, the service worked again; approximately 1.8 GB was in use. The observation supports a storage-capacity problem but does not prove the full filesystem was the sole cause of missing IPv4.
+Az LXC futott, de az AdGuard és az IPv4-elérés nem működött megfelelően. A 2 GB-os root fájlrendszere csaknem megtelt. A méret 6 GB-ra növelése után a szolgáltatás ismét működött, körülbelül 1,8 GB foglalással. Ez a tárhelykapacitás problémáját támasztja alá, de önmagában nem bizonyítja, hogy a hiányzó IPv4-címet kizárólag ez okozta.
 
-## Read-only checks
+## Nem módosító ellenőrzések
 
-    pct config 107
-    pct exec 107 -- df -h /
-    pct exec 107 -- du -xhd1 /opt /usr /var 2>/dev/null
-    pct exec 107 -- ip -4 -br addr
-    pct exec 107 -- systemctl --failed
+```bash
+pct config 107
+pct exec 107 -- df -h /
+pct exec 107 -- du -xhd1 /opt /usr /var 2>/dev/null
+pct exec 107 -- ip -4 -br addr
+pct exec 107 -- systemctl --failed
+```
 
-Review retention and disk usage before deleting query logs or configuration. DNS is an infrastructure dependency: document how clients behave if CT 107 is unavailable.
+Naplók és konfiguráció törlése előtt vizsgálandó a foglalás és a megőrzési beállítás. A DNS a teljes hálózat függősége: külön dokumentálni kell, mi történik a kliensekkel a CT 107 kiesésekor.
