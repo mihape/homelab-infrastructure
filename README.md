@@ -1,52 +1,52 @@
-# Enterprise Home Lab & Infrastructure Portfolio
+# Homelab Infrastructure – saját üzemeltetési labor
 
-Welcome to my central infrastructure documentation repository. This document outlines the architecture, networking, and service deployment of my high-availability Proxmox VE home lab environment, built to enterprise security standards.
+> **English summary:** Personal Proxmox VE homelab documenting Linux, networking, virtualization, Windows Server learning, incident response and monitoring. The detailed documentation is in Hungarian. Planned projects are clearly distinguished from completed work.
 
-## Hardware Specifications
-*   **Hypervisor Host:** Dell OptiPlex 7000 (Intel Core i5-12500)
-*   **Core Router:** Xiaomi AX3600 running custom Immortal OpenWrt firmware
-*   **Environment:** Proxmox Virtual Environment (PVE)
+Saját Proxmox VE-alapú laborom, ahol Linuxot, Windows Servert, virtualizációt, hálózatokat és szolgáltatásüzemeltetést gyakorlok. A hangsúly nem a telepített alkalmazások számán, hanem a **hibakeresésen, az ellenőrizhető megoldásokon és a dokumentáción** van.
 
-##  Virtualization & Services Topology
-Services are logically separated based on resource demands and security profiles, utilizing a mix of lightweight Linux Containers (LXC - Debian) and full Virtual Machines (VM).
+Egy kisvállalkozásnál Windows-kliensgépeket és mindennapi IT-feladatokat is támogatok, emellett mérnökinformatikus-asszisztens képzésen tanulok. **Ez a repó a saját homelabomról szól**, nem a munkáltatóm infrastruktúrájáról vagy vállalati AD-üzemeltetői gyakorlatról.
 
-###  Core Infrastructure, Security & Routing
-*   **Tailscale (Debian LXC):** Decentralized, Zero-Trust mesh VPN for secure remote administration.
-*   **AdGuard Home (LXC):** Network-wide ad blocking and local DNS resolution.
-*   **Nginx-UI (LXC):** Centralized Reverse Proxy handling internal routing and SSL termination.
-*   **Vaultwarden (LXC):** Self-hosted, encrypted password management.
-*   **Dashboards:** Homepage & Heimdall-Dashboard for unified service access.
+## Mivel foglalkozom a laborban?
 
-###  Productivity, Cloud & Custom Apps
-*   **ownCloud (VM):** Isolated file hosting and synchronization.
-*   **Paperless-ngx (LXC):** Automated, OCR-powered document management system.
-*   **PhysioVision (VM - Docker):** Custom-developed, private AI/Computer Vision application running in an isolated Docker environment.
+| Terület | Dokumentált technológiák és feladatok |
+| --- | --- |
+| Virtualizáció | Proxmox VE, LXC, VM-ek, USB passthrough |
+| Hálózat és távoli elérés | ImmortalWrt, DNS/DHCP-hibakeresés, Tailscale |
+| Belső szolgáltatások | AdGuard Home, Vaultwarden, reverse proxy, Gotify |
+| Okosotthon | Home Assistant OS, Zigbee2MQTT és MQTT |
+| Média és tárhely | Jellyfin, fájlrendszer- és thin-pool-hibakeresés |
+| Monitorozás | LXC IPv4-figyelő, Gotify-értesítések, systemd timer |
+| Windows Server | VM 124 telepítve; az Active Directory beállítása **még nem kezdődött el** |
 
-###  Smart Home & Automation
-*   **Home Assistant OS (VM):** Core automation hub with Google Home Backup integration.
-*   **IoT Protocols:** MQTT Broker (Mosquitto), Zigbee2MQTT.
-*   **Local AI:** Piper & Whisper for private, on-premise voice processing.
+A táblázat nem élő szolgáltatásleltár, és nem jelent vállalati magas rendelkezésre állású környezetet.
 
-###  Media & Content Delivery
-*   **Jellyfin & ErsatzTV (LXC):** Local media streaming and custom IPTV channel generation.
-*   **Automation Stack (LXC):** qBittorrent, Sonarr, Radarr, Prowlarr, Overseerr, Bazarr.
+## Incidensek, dokumentáció és kód
 
-###  Monitoring & Alerting
-*   **Uptime Kuma (LXC):** Real-time status tracking and latency monitoring.
-*   **Gotify (LXC):** Self-hosted push notification server linked with Uptime Kuma for instant Telegram alerts on service degradation.
-*   **Grafana (LXC):** Deployed for future advanced metric visualization.
-*   **Alpine-IT-Tools (LXC):** Lightweight container for rapid network troubleshooting.
+- [Incidensnapló](docs/incidents/README.md) – dátumozott esetek, tünetek, beavatkozások, ellenőrzés és nyitott kérdések.
+- [Tömeges LXC IPv4-ütközés](docs/incidents/2026-09-lxc-ip-conflicts.md) – hibakeresés Windows-kliens, DHCP és konténerinterfészek között.
+- [Proxmox IP Watch](docs/monitoring/proxmox-ip-watch.md) – Gotify-riasztások, systemd-időzítő, ellenőrzés és korlátok.
+- [IP Watch Bash-script](scripts/proxmox-ip-watch.sh) és [szimulált tesztek](tests/test-ip-watch.sh) – **még nem telepített fejlesztési változat**, amely eltér az éles Proxmoxon futó scripttől.
+- [Proxmox-tárhelyhiba](docs/incidents/2026-08-23-proxmox-storage-full.md) és [Jellyfin-helyreállítás](docs/incidents/2026-08-29-thin-pool-jellyfin.md) – az infrastruktúra és az alkalmazás helyreállását külön ellenőriztem.
+- [Windows Server / AD-labor](docs/labs/windows-server-ad.md) – telepített VM és egyértelműen **tervezettként** jelölt AD-gyakorlatok.
 
-##  Network Security & Segmentation (OpenWrt)
-The network architecture adheres to enterprise security standards, implementing strict zone-based firewalling on the OpenWrt core router (Xiaomi AX3600):
-*   **Air-Gapped IoT Zone:** Smart devices (IoT Interface `192.168.10.1/24`) are explicitly denied WAN (Internet) access via OpenWrt Zone Forwards (`IoT => REJECT`).
-*   **Microsegmentation & ACLs:** Traffic from the isolated IoT zone to the main LAN is tightly controlled using port-specific forwarding rules (e.g., permitting only TCP 1883 for MQTT traffic and UDP 5353 for NestMini mDNS).
-*   **Secrets Management:** All sensitive configurations and credentials are managed via `.env` files and explicitly excluded from version control via `.gitignore`.
+## Hogyan közelítek meg egy hibát?
 
-##  Future Roadmap & Continuous Integration
-- [ ] Migrate current OpenWrt zone-based isolation to strict 802.1Q VLAN tagging across the switch and Proxmox host (CCNA 2 SRWE objective).
-- [ ] Transition manual configuration deployments to **Ansible** playbooks.
-- [ ] Integrate **Jira Service Management** workflows for ticketing and change-management tracking of the lab.
+1. Felmérem a hibát, a felhasználói hatást és az érintett rendszereket.
+2. Rögzítem a releváns címeket, útvonalakat, tárhelyadatokat, naplókat és időpontokat.
+3. Megkülönböztetem a bizonyítékot a feltételezéstől; lehetőség szerint egyszerre egy dolgon változtatok.
+4. A rendszer mellett az érintett alkalmazás tényleges működését is ellenőrzöm.
+5. Dokumentálom a nyitott kérdéseket, és visszatérő hibánál monitorozást vagy reprodukálható laborgyakorlatot készítek.
 
----
-> * **Development Note:** The core logic and boilerplate for specific automation scripts and configurations within this repository were rapidly prototyped utilizing AI-assisted tooling, with manual architectural oversight, testing, and deployment by the author.*
+## Következő lépések
+
+- [ ] A Proxmoxon futó IP Watch összevetése a verziókezelt változattal; ellenőrzött bevezetés.
+- [ ] Anonimizált hálózati ábra és időponttal megjelölt VM/LXC-leltár.
+- [ ] **Izolált** Windows Server AD DS/DNS és Windows-kliens labor, később OU/GPO és PowerShell-gyakorlatokkal.
+- [ ] Valódi, dokumentált mentés-visszaállítási próba.
+- [ ] Root fájlrendszer és thin pool kapacitásriasztása.
+
+## Nyilvános repó és biztonság
+
+Nem kerülnek ide jelszavak, tokenek, VPN-kulcsok, ügyfél- és munkáltatói adatok, teljes mentések vagy szerkesztetlen céges konfigurációk. A munkatapasztalatomat és a saját homelabban végzett gyakorlatot külön kezelem. A tervezett feladat nem befejezett eredmény, és egy sikeres újraindítás önmagában nem bizonyított gyökérok.
+
+Egyes dokumentációs és fejlesztési feladatokhoz AI-eszközöket is használok. A ténylegesen kipróbált megoldásokat és a fejlesztési terveket külön jelölöm.
