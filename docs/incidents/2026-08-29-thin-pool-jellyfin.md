@@ -1,23 +1,25 @@
-# Thin-pool reclamation and Jellyfin database recovery
+# Thin pool tárhelyfelszabadítás és Jellyfin-adatbázis helyreállítása
 
-**Date:** 2026-08-29 (CEST)  
-**Scope:** Proxmox local-lvm, HAOS/PhysioVision VMs, Jellyfin LXC.  
-**Status:** VMs and Jellyfin Next Up returned; Intro Skipper remained unresolved at last check.
+**Dátum:** 2026-08-29 (CEST)  
+**Érintett rendszer:** Proxmox local-lvm, HAOS/PhysioVision VM-ek, Jellyfin LXC.  
+**Állapot:** A VM-ek és a Jellyfin Next Up funkciója helyreállt; az Intro Skipper az utolsó ellenőrzéskor még hibás volt.
 
-## Observed recovery
+## Megfigyelt helyreállítás
 
-Thin-pool usage was approximately 92% before cleanup, around 74.46% after LXC TRIM and around 70.08% after VM TRIM. These are point-in-time observations, not future capacity guarantees. HAOS and PhysioVision had experienced I/O-error states and later ran again.
+A thin pool foglaltsága a tisztítás előtt körülbelül 92% volt, LXC TRIM után 74,46%, VM TRIM után pedig 70,08%. Ezek adott pillanatban mért értékek, nem jelentenek garanciát a későbbi kapacitásra. A HAOS és a PhysioVision VM korábban I/O-hibás állapotba került, később ismét futottak.
 
-Jellyfin's main SQLite database was malformed. Recovery was performed on a copy; the rebuilt database passed integrity_check, Jellyfin started and Next Up returned. Separately, Intro Skipper's DLL raised System.BadImageFormatException / Bad IL format. Its underlying plugin failure was **not** confirmed repaired.
+A Jellyfin fő SQLite-adatbázisa sérült volt. A helyreállítás **másolaton** történt; az újraépített adatbázis átment az `integrity_check` ellenőrzésen, a Jellyfin elindult, a Next Up visszatért. Ettől különállóan az Intro Skipper DLL `System.BadImageFormatException / Bad IL format` hibát adott; a bővítmény hibájának végleges javítását **nem igazoltuk**.
 
-## Safe workflow
+## Biztonságos eljárás
 
-    pvesm status
-    lvs -a -o lv_name,lv_size,data_percent,metadata_percent,lv_attr
-    qm list
-    pct list
-    journalctl -k -n 100 --no-pager
+```bash
+pvesm status
+lvs -a -o lv_name,lv_size,data_percent,metadata_percent,lv_attr
+qm list
+pct list
+journalctl -k -n 100 --no-pager
+```
 
-Verify backing storage and filesystem support before TRIM; check data **and metadata** pool consumption. For SQLite corruption: stop the service, copy the database, recover the copy, run PRAGMA integrity_check, then validate application behavior. Maintain a restore point before changing data.
+TRIM előtt ellenőrizni kell az alatta lévő tárolót és fájlrendszert, valamint a thin pool **adat- és metaadat-foglaltságát**. SQLite-sérülésnél a szolgáltatás leállítása, adatbázismásolat készítése, a másolat helyreállítása és a `PRAGMA integrity_check` után az alkalmazás viselkedését is ellenőrizni kell. Adatmódosítás előtt visszaállítási pont szükséges.
 
-**Follow-up:** Confirm plugin version and Intro Skipper health; implement capacity alerts and a tested restore procedure.
+**Következő feladat:** Az Intro Skipper verziójának és működésének ellenőrzése; kapacitásriasztások és kipróbált visszaállítási eljárás.
